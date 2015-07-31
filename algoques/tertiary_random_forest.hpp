@@ -25,14 +25,13 @@ namespace AlgoComp {
     Forest * t_forest; // this is the forest datastructure we are using now
     OutputChangeListener * _output_listener_; 
     std::vector<double> current_predictor_value_vec_;
-    std::vector<double> forest_output_vec_; // this is the output of each tree in the forest
+    // std::vector<double> forest_output_vec_; // this is the output of each tree in the forest
     double forest_output_;
 
     TertiaryRandomForest ( )
       : t_forest(nullptr),
 	_output_listener_(nullptr),
 	current_predictor_value_vec_(),
-	forest_output_vec_(),
 	forest_output_(0)
     {
     }
@@ -46,17 +45,17 @@ namespace AlgoComp {
 
     double GetValue ( const Tree & tree, const Node & node ) {
       if ( !node.is_leaf_) {
-	  if ( current_predictor_value_vec_[node.predictor_index_ - 1] < node.boundary_value_vec_[0]) {
-	    return GetValue ( tree, tree[node.child_node_index_vec_[0]] );
-	  }
-	  else if ( ( current_predictor_value_vec_[node.predictor_index_ - 1] <= node.boundary_value_vec_[1] ) &&
-		    ( current_predictor_value_vec_[node.predictor_index_ - 1] >= node.boundary_value_vec_[0] ) ) {
-	    return GetValue ( tree, tree[node.child_node_index_vec_[1]] );
-	  }
-	  else {
-	    return GetValue ( tree, tree[node.child_node_index_vec_[2]] );
-	  }
-	}
+        if ( current_predictor_value_vec_[node.predictor_index_ - 1] < node.boundary_value_vec_[0]) {
+          return GetValue ( tree, tree[node.child_node_index_vec_[0]] );
+        }
+        else if ( ( current_predictor_value_vec_[node.predictor_index_ - 1] <= node.boundary_value_vec_[1] ) &&
+                  ( current_predictor_value_vec_[node.predictor_index_ - 1] >= node.boundary_value_vec_[0] ) ) {
+          return GetValue ( tree, tree[node.child_node_index_vec_[1]] );
+        }
+        else {
+          return GetValue ( tree, tree[node.child_node_index_vec_[2]] );
+        }
+      }
       else {
 	return node.predicted_value_;
       }

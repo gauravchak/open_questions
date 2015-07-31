@@ -43,13 +43,15 @@ namespace AlgoComp {
       current_predictor_value_vec_.resize(t_forest->num_predictors_, 0);
     }
 
+    #define ONE_OR_ZERO 1
+    
     double GetValue ( const Tree & tree, const Node & node ) {
       if ( !node.is_leaf_) {
-        if ( current_predictor_value_vec_[node.predictor_index_ - 1] < node.boundary_value_vec_[0]) {
+        if ( current_predictor_value_vec_[node.predictor_index_ - ONE_OR_ZERO] < node.boundary_value_vec_[0]) {
           return GetValue ( tree, tree[node.child_node_index_vec_[0]] );
         }
-        else if ( ( current_predictor_value_vec_[node.predictor_index_ - 1] <= node.boundary_value_vec_[1] ) &&
-                  ( current_predictor_value_vec_[node.predictor_index_ - 1] >= node.boundary_value_vec_[0] ) ) {
+        else if ( ( current_predictor_value_vec_[node.predictor_index_ - ONE_OR_ZERO] <= node.boundary_value_vec_[1] ) &&
+                  ( current_predictor_value_vec_[node.predictor_index_ - ONE_OR_ZERO] >= node.boundary_value_vec_[0] ) ) {
           return GetValue ( tree, tree[node.child_node_index_vec_[1]] );
         }
         else {
@@ -64,7 +66,7 @@ namespace AlgoComp {
     //Will be called to notfiy changes in predictor values
     //Should return the updated output value
     double OnInputChange ( unsigned int input_index_, double input_value_ ) {
-      current_predictor_value_vec_[input_index_-1] = input_value_;
+      current_predictor_value_vec_[input_index_ - ONE_OR_ZERO] = input_value_;
       forest_output_ = 0;
       for (const Tree & tree : t_forest->tree_vec_) {
 	forest_output_ += GetValue ( tree, tree[0] );

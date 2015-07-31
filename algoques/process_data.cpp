@@ -107,7 +107,7 @@ int main ( int argc, char ** argv )
       // Later we can change this to only significant changes only
       // Perhaps calculation of what is a significant change is best done inside the TertiaryRandomForest ?
       AlgoComp::cyclecount_t prev_call_ = AlgoComp::GetCpucycleCount();
-      double forest_delta_value_ = tertiary_random_forest_.OnInputChange ( i-2u, last_indicator_values_[i-2u] ) ;
+      double forest_delta_value_ = tertiary_random_forest_.OnInputChange ( i-1u, last_indicator_values_[i-2u] ) ;
       AlgoComp::cyclecount_t after_call_ = AlgoComp::GetCpucycleCount();
       total_time_taken_ += ( after_call_ - prev_call_ );
     }

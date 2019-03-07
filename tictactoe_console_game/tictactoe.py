@@ -2,11 +2,12 @@
 Tictactoe with simple AI
 '''
 from typing import Tuple, List
+import copy
 
 class TTTGameBoard:
     ''' This is the game board class not the AI class '''
     def __init__(self)-> None:
-        self.tokens = [['-','-','-'] for x in range(3)]
+        self.tokens = [['-']*3 for x in range(3)]
         self.winner = '-'
 
     def add(self, i:int, j:int, token:str) -> None:
@@ -18,11 +19,11 @@ class TTTGameBoard:
             self.tokens[i-1][j-1] = token
         else:
             # complain
-            print ('Error')
+            print ('Error i = {} j = {}'.format(i, j))
 
     def print(self) -> None:
         for i in range(3):
-            print ("{}|{}|{}".format(self.tokens[i][0], self.tokens[i][1], self.tokens[i][2]))
+            print ("{}".format('|'.join(self.tokens[i])))
 
     def is_board_full(self) -> bool:
         for i in range(3):
@@ -40,31 +41,54 @@ class TTTGameBoard:
                     list_of_empty_squares.append((i,j))
         return list_of_empty_squares
 
+    def get_num_paths_to_lose(self) -> int:
+        '''Returns the number of ways in which X can win by one move'''
+        num_paths_to_lose = 0
+        for empty_x in self.get_list_of_empty_squares():
+            hyp_tttgb = copy.deepcopy(self)
+            hyp_tttgb.add(empty_x[0]+1, empty_x[1]+1, 'X')
+            if (hyp_tttgb.is_game_over() and hyp_tttgb.winner == 'X'):
+                num_paths_to_lose = num_paths_to_lose + 1
+        return num_paths_to_lose
+
     def is_game_over(self) -> bool:
         '''Checks who won. Sets the winner and returns true. If no winner, returns false'''
         for winchar in ['X', 'O']:
-            if (self.tokens[0][0] == winchar and self.tokens[0][1] == winchar and self.tokens[0][2] == winchar):
+            for i in range(3):
+                # check ith row
+                line_won = True
+                for j in range(3):
+                    if (self.tokens[i][j] != winchar):
+                        line_won = False
+                        break
+                if line_won:
+                    self.winner = winchar
+                    return True
+            for j in range(3):
+                # check jth column
+                col_won = True
+                for i in range(3):
+                    if (self.tokens[i][j] != winchar):
+                        col_won = False
+                        break
+                if col_won:
+                    self.winner = winchar
+                    return True
+            # Check diagonal
+            diag_won = True
+            for i in range(3):
+                if (self.tokens[i][i] != winchar):
+                    diag_won = False
+                    break
+            if diag_won:
                 self.winner = winchar
                 return True
-            if (self.tokens[1][0] == winchar and self.tokens[1][1] == winchar and self.tokens[1][2] == winchar):
-                self.winner = winchar
-                return True
-            if (self.tokens[2][0] == winchar and self.tokens[2][1] == winchar and self.tokens[2][2] == winchar):
-                self.winner = winchar
-                return True
-            if (self.tokens[0][0] == winchar and self.tokens[1][0] == winchar and self.tokens[2][0] == winchar):
-                self.winner = winchar
-                return True
-            if (self.tokens[0][1] == winchar and self.tokens[1][1] == winchar and self.tokens[2][1] == winchar):
-                self.winner = winchar
-                return True
-            if (self.tokens[0][2] == winchar and self.tokens[1][2] == winchar and self.tokens[2][2] == winchar):
-                self.winner = winchar
-                return True
-            if (self.tokens[0][0] == winchar and self.tokens[1][1] == winchar and self.tokens[2][2] == winchar):
-                self.winner = winchar
-                return True
-            if (self.tokens[0][2] == winchar and self.tokens[1][1] == winchar and self.tokens[2][0] == winchar):
+            diag_won = True
+            for i in range(3):
+                if (self.tokens[i][2 - i] != winchar):
+                    diag_won = False
+                    break
+            if diag_won:
                 self.winner = winchar
                 return True
         return False
@@ -76,10 +100,20 @@ class TTTPlayer:
         self.tttgb = tttgb
     
     def _rank_possible_moves(self, given_next_moves: List[Tuple[int, int]]) -> List[Tuple[Tuple[int,int], float]]:
-        '''Returns a list of tuples of possible moves and scores'''
+        '''Given a list of possible moves, it returns a list of tuples of possible moves and scores'''
         ranked_list = []
         for idx, x in enumerate(given_next_moves):
-            ranked_list.append((x, 100 - idx))
+            hyp_tttgb = copy.deepcopy(self.tttgb)
+            hyp_tttgb.add(x[0]+1, x[1]+1, 'O')
+            if (hyp_tttgb.is_game_over() and hyp_tttgb.winner == 'O'):
+                score = 100  # good move so high score
+            else:
+                # The term 1 of the score will just make us choose the first possible move
+                score = (100 - idx)/100 - hyp_tttgb.get_num_paths_to_lose()
+            print ('Score allowed move {} {} = {}'.format(x[0], x[1], score))
+            ranked_list.append((x, score))
+        ranked_list.sort(key=lambda x:x[1], reverse=True)
+        # print ('DEBUG list = {}'.format(ranked_list))
         return ranked_list
 
     def play_next_move(self) -> Tuple[int, int]:

@@ -20,13 +20,19 @@ def rotate_numpy_matrix(mat:numpy.ndarray) -> numpy.ndarray:
     2 2 2
     '''
     N:int = len(mat)
-    for num_iter in range (N//2):
-        for j in range(num_iter, N - num_iter):
-            saved_value = mat[num_iter, j]
-            #mat[num_iter, j] = mat[num_iter, j]
+    for layer in range (N//2):
+        first = layer
+        last = N - layer - 1
+        for j in range(first, last):
+            offset = j - first
+            saved_value = mat[first, j]
+            mat[first, j] = mat[last - offset, first]  # 0 0 <= 2 0, 0 1 <= 1 0  
+            mat[last - offset, first] = mat[last, last - offset]  # 2 0 <= 2 2, 1 0 <= 2 1
+            mat[last, last - offset] = mat[j, last]  # 2 2 <= 0 2, 2 1 <= 1 2
+            mat[j, last] = saved_value  # 0 2 <= 0 0, 2 1 <= 1 2
     return (mat)
 
 if __name__ == "__main__":
-    x = numpy.indices((3,3))[0]
+    x = numpy.array([[0, 0, 0],[1, 1, 1],[2, 2, 2]])
     print ('x = {} and shape = {}'.format(x, x.shape))
     print ('Rotated mat = {}'.format(rotate_numpy_matrix(x)))
